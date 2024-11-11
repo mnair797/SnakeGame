@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		BAB8FAC92CCF19A600A7B082 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAB8FAC82CCF19A600A7B082 /* main.cpp */; };
+		BAB8FAD52CCF39D900A7B082 /* libsfml-window.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAB8FAD02CCF39D900A7B082 /* libsfml-window.dylib */; };
+		BAB8FAD62CCF39D900A7B082 /* libsfml-system.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAB8FAD12CCF39D900A7B082 /* libsfml-system.dylib */; };
+		BAB8FAD72CCF39D900A7B082 /* libsfml-audio.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAB8FAD22CCF39D900A7B082 /* libsfml-audio.dylib */; };
+		BAB8FAD82CCF39D900A7B082 /* libsfml-network.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAB8FAD32CCF39D900A7B082 /* libsfml-network.dylib */; };
+		BAB8FAD92CCF39D900A7B082 /* libsfml-graphics.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAB8FAD42CCF39D900A7B082 /* libsfml-graphics.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +30,11 @@
 /* Begin PBXFileReference section */
 		BAB8FAC52CCF19A600A7B082 /* sfml_testing */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = sfml_testing; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAB8FAC82CCF19A600A7B082 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		BAB8FAD02CCF39D900A7B082 /* libsfml-window.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libsfml-window.dylib"; path = "../../../../opt/homebrew/Cellar/sfml/2.6.1/lib/libsfml-window.dylib"; sourceTree = "<group>"; };
+		BAB8FAD12CCF39D900A7B082 /* libsfml-system.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libsfml-system.dylib"; path = "../../../../opt/homebrew/Cellar/sfml/2.6.1/lib/libsfml-system.dylib"; sourceTree = "<group>"; };
+		BAB8FAD22CCF39D900A7B082 /* libsfml-audio.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libsfml-audio.dylib"; path = "../../../../opt/homebrew/Cellar/sfml/2.6.1/lib/libsfml-audio.dylib"; sourceTree = "<group>"; };
+		BAB8FAD32CCF39D900A7B082 /* libsfml-network.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libsfml-network.dylib"; path = "../../../../opt/homebrew/Cellar/sfml/2.6.1/lib/libsfml-network.dylib"; sourceTree = "<group>"; };
+		BAB8FAD42CCF39D900A7B082 /* libsfml-graphics.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libsfml-graphics.dylib"; path = "../../../../opt/homebrew/Cellar/sfml/2.6.1/lib/libsfml-graphics.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +42,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BAB8FAD92CCF39D900A7B082 /* libsfml-graphics.dylib in Frameworks */,
+				BAB8FAD52CCF39D900A7B082 /* libsfml-window.dylib in Frameworks */,
+				BAB8FAD62CCF39D900A7B082 /* libsfml-system.dylib in Frameworks */,
+				BAB8FAD72CCF39D900A7B082 /* libsfml-audio.dylib in Frameworks */,
+				BAB8FAD82CCF39D900A7B082 /* libsfml-network.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,6 +58,7 @@
 			children = (
 				BAB8FAC72CCF19A600A7B082 /* sfml_testing */,
 				BAB8FAC62CCF19A600A7B082 /* Products */,
+				BAB8FACF2CCF38A800A7B082 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -60,6 +76,18 @@
 				BAB8FAC82CCF19A600A7B082 /* main.cpp */,
 			);
 			path = sfml_testing;
+			sourceTree = "<group>";
+		};
+		BAB8FACF2CCF38A800A7B082 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BAB8FAD22CCF39D900A7B082 /* libsfml-audio.dylib */,
+				BAB8FAD42CCF39D900A7B082 /* libsfml-graphics.dylib */,
+				BAB8FAD32CCF39D900A7B082 /* libsfml-network.dylib */,
+				BAB8FAD12CCF39D900A7B082 /* libsfml-system.dylib */,
+				BAB8FAD02CCF39D900A7B082 /* libsfml-window.dylib */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -244,20 +272,64 @@
 		BAB8FACD2CCF19A600A7B082 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				"ARCHS[sdk=*]" = (
+					"$(ARCHS_STANDARD)",
+					arm64,
+				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = M93K7WB6BB;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "/opt/homebrew/opt/sfml/lib\n";
+				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/homebrew/opt/sfml/lib,
+				);
+				"LIBRARY_SEARCH_PATHS[arch=*]" = /opt/homebrew/opt/sfml/lib;
+				"OTHER_LDFLAGS[arch=*]" = (
+					"-lsfml-graphics",
+					"-lsfml-window",
+					"-lsfml-system",
+					"-lsfml-network",
+					"-lsfml-audio\n",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				"SYSTEM_FRAMEWORK_SEARCH_PATHS[arch=*]" = "/opt/homebrew/opt/sfml/lib\n";
+				"SYSTEM_HEADER_SEARCH_PATHS[arch=*]" = /opt/homebrew/include;
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = /opt/homebrew/include;
 			};
 			name = Debug;
 		};
 		BAB8FACE2CCF19A600A7B082 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				"ARCHS[sdk=*]" = (
+					"$(ARCHS_STANDARD)",
+					arm64,
+				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = M93K7WB6BB;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "/opt/homebrew/opt/sfml/lib\n";
+				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/homebrew/opt/sfml/lib,
+				);
+				"LIBRARY_SEARCH_PATHS[arch=*]" = "/opt/homebrew/opt/sfml/lib\n";
+				"OTHER_LDFLAGS[arch=*]" = (
+					"-lsfml-graphics",
+					"-lsfml-window",
+					"-lsfml-system",
+					"-lsfml-network",
+					"-lsfml-audio\n",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				"SYSTEM_FRAMEWORK_SEARCH_PATHS[arch=*]" = "/opt/homebrew/opt/sfml/lib\n";
+				"SYSTEM_HEADER_SEARCH_PATHS[arch=*]" = /opt/homebrew/include;
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = /opt/homebrew/include;
 			};
 			name = Release;
 		};
