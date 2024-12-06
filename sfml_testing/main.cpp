@@ -29,7 +29,7 @@ struct Segment {
  @param fruitY The y-coordinate of the fruit.
  @param snakeBody A vector of structures indicating the coordinates.
  */
-void placeFruit(int &fruitX, int &fruitY, const vector<Segment> &snakeBody) {
+void placeFruit(int &fruitX, int &fruitY, const vector<Segment> &snakeBody, Sprite &fruitSprite) {
     //Randomly pick a spot on the board
     fruitX = rand() % gridWidth;
     fruitY = rand() % gridHeight;
@@ -37,10 +37,12 @@ void placeFruit(int &fruitX, int &fruitY, const vector<Segment> &snakeBody) {
     //Ensure the fruit doesn't land on the snake
     for (const Segment &segment : snakeBody) {
         if (segment.x == fruitX && segment.y == fruitY) {
-            placeFruit(fruitX, fruitY, snakeBody);  //Recurse if the fruit is on the snake
+            placeFruit(fruitX, fruitY, snakeBody, fruitSprite);  //Recurse if the fruit is on the snake
             return;
         }
     }
+    
+    fruitSprite.setPosition(fruitX * tileSize, fruitY * tileSize);
 }
 /**
  Displays the start screen, allowing players to choose the snake's color and speed, and start the game
@@ -176,8 +178,7 @@ int main() {
     while (playAgain)
     {
         int score = 0;
-        // bool gameRunning = true; NOT NEEDED
-        
+
         //Create a window
         RenderWindow window(VideoMode(gridWidth * tileSize, gridHeight * tileSize), "Snake Game");
 
@@ -196,11 +197,14 @@ int main() {
         snakeBody.push_back({gridWidth / 2, gridHeight / 2});  //Initial position of the snake's head
 
         //Create fruit
-        RectangleShape fruit(Vector2f(tileSize, tileSize));
-        fruit.setFillColor(Color::Red);
+        Texture fruitTexture;
+        fruitTexture.loadFromFile("fruit.png");
+        Sprite fruitSprite;
+        fruitSprite.setTexture(fruitTexture);
         int fruitX, fruitY;
-        placeFruit(fruitX, fruitY, snakeBody);
-        fruit.setPosition(fruitX * tileSize, fruitY * tileSize);
+        placeFruit(fruitX, fruitY, snakeBody, fruitSprite);
+        fruitSprite.setPosition(fruitX * tileSize, fruitY * tileSize);
+        fruitSprite.setScale(float(tileSize) / fruitSprite.getLocalBounds().width, float(tileSize) / fruitSprite.getLocalBounds().height); //Scales image down
 
         //Direction variable
         int snakeDirection = Right; //Snake starts moving to the right initially
@@ -254,7 +258,7 @@ int main() {
                 //Check if the snake eats the fruit
                 if (newHead.x == fruitX && newHead.y == fruitY) {
                     ateFruit = true; //Snake will grow
-                    placeFruit(fruitX, fruitY, snakeBody); //Place new fruit
+                    placeFruit(fruitX, fruitY, snakeBody, fruitSprite); //Place new fruit
                     score++;
                 }
 
@@ -317,8 +321,7 @@ int main() {
 
 
             //Draw the fruit
-            fruit.setPosition(fruitX * tileSize, fruitY * tileSize);
-            window.draw(fruit);
+            window.draw(fruitSprite);
 
             // Display current score and high score
             Font font;
@@ -352,5 +355,6 @@ int main() {
     }
 
     cout << "Thanks for playing! Final High Score: " << highScore << endl;
+    saveHighScore(0); // Resets high score for next game
     return 0;
 }
