@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <fstream>
 using namespace std;
 using namespace sf;
 
@@ -130,152 +131,226 @@ void displayStartScreen(RenderWindow &window, Color &snakeColor, int &speedLevel
     }
 }
 
+/**
+ Prompts the player to decide whether to play the game again
+ @return A boolean value: true if the player chooses to play again, false otherwise
+*/
+bool playAgainPrompt() {
+    char choice;
+    cout << "Game Over! Play Again? (Y/N): ";
+    cin >> choice;
+    return (choice == 'Y' || choice == 'y');
+}
+
+/**
+ Saves the high score to a file to persist between game sessions
+ @param highScore The highest score achieved during the session
+*/
+void saveHighScore(int highScore) {
+    ofstream outFile("highscore.txt");
+    if (outFile.is_open()) {
+        outFile << highScore;
+        outFile.close();
+    }
+}
+
+/**
+ Loads the high score from a file at the start of a game session
+ @return The highest score saved in the file, or 0 if no file exists
+*/
+int loadHighScore() {
+    ifstream inFile("highscore.txt");
+    int highScore = 0;
+    if (inFile.is_open()) {
+        inFile >> highScore;
+        inFile.close();
+    }
+    return highScore;
+}
+
 
 int main() {
-    //Create a window
-    RenderWindow window(VideoMode(gridWidth * tileSize, gridHeight * tileSize), "Snake Game");
-
-    //Seed random number generator
-    srand(static_cast<unsigned int>(time(0)));
-
+    bool playAgain = true;
+    int highScore = loadHighScore(); //Loads high score file into local variable
     
-    Color snakeColor = Color::Black; //Default to black body color
-    int speedLevel = 5; //Default to medium speed
+    while (playAgain)
+    {
+        int score = 0;
+        // bool gameRunning = true; NOT NEEDED
+        
+        //Create a window
+        RenderWindow window(VideoMode(gridWidth * tileSize, gridHeight * tileSize), "Snake Game");
 
-    //Display start screen
-    displayStartScreen(window, snakeColor, speedLevel);
+        //Seed random number generator
+        srand(static_cast<unsigned int>(time(0)));
 
-    //Create snake (using a vector for the snake body)
-    vector<Segment> snakeBody;
-    snakeBody.push_back({gridWidth / 2, gridHeight / 2});  //Initial position of the snake's head
+        
+        Color snakeColor = Color::Black; //Default to black body color
+        int speedLevel = 5; //Default to medium speed
 
-    //Create fruit
-    RectangleShape fruit(Vector2f(tileSize, tileSize));
-    fruit.setFillColor(Color::Red);
-    int fruitX, fruitY;
-    placeFruit(fruitX, fruitY, snakeBody);
-    fruit.setPosition(fruitX * tileSize, fruitY * tileSize);
+        //Display start screen
+        displayStartScreen(window, snakeColor, speedLevel);
 
-    //Direction variable
-    int snakeDirection = Right; //Snake starts moving to the right initially
-    bool ateFruit = false; //If snake ate the fruit
+        //Create snake (using a vector for the snake body)
+        vector<Segment> snakeBody;
+        snakeBody.push_back({gridWidth / 2, gridHeight / 2});  //Initial position of the snake's head
 
-    //SFML clock to calculate time for automatic movement
-    Clock clock;
-    Time elapsedTime;
-    
-    float moveDelay = 0.46f - ((speedLevel - 1) * 0.04f); //Maps speed level 1-10 to delay
+        //Create fruit
+        RectangleShape fruit(Vector2f(tileSize, tileSize));
+        fruit.setFillColor(Color::Red);
+        int fruitX, fruitY;
+        placeFruit(fruitX, fruitY, snakeBody);
+        fruit.setPosition(fruitX * tileSize, fruitY * tileSize);
 
-    //Game loop
-    while (window.isOpen()) {
-        Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == Event::Closed)
-                window.close();
+        //Direction variable
+        int snakeDirection = Right; //Snake starts moving to the right initially
+        bool ateFruit = false; //If snake ate the fruit
 
-            if (event.type == Event::KeyPressed) {  //Checks if a key is pressed
-                //Change snake direction based on key press, cannot go in opposite direction
-                if (event.key.code == Keyboard::Up && snakeDirection != Down) {
-                    snakeDirection = Up;
-                }
-                if (event.key.code == Keyboard::Down && snakeDirection != Up) {
-                    snakeDirection = Down;
-                }
-                if (event.key.code == Keyboard::Left && snakeDirection != Right) {
-                    snakeDirection = Left;
-                }
-                if (event.key.code == Keyboard::Right && snakeDirection != Left) {
-                    snakeDirection = Right;
+        //SFML clock to calculate time for automatic movement
+        Clock clock;
+        Time elapsedTime;
+        
+        float moveDelay = 0.46f - ((speedLevel - 1) * 0.04f); //Maps speed level 1-10 to delay
+
+        //Game loop
+        while (window.isOpen()) {
+            Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == Event::Closed)
+                    window.close();
+
+                if (event.type == Event::KeyPressed) {  //Checks if a key is pressed
+                    //Change snake direction based on key press, cannot go in opposite direction
+                    if (event.key.code == Keyboard::Up && snakeDirection != Down) {
+                        snakeDirection = Up;
+                    }
+                    if (event.key.code == Keyboard::Down && snakeDirection != Up) {
+                        snakeDirection = Down;
+                    }
+                    if (event.key.code == Keyboard::Left && snakeDirection != Right) {
+                        snakeDirection = Left;
+                    }
+                    if (event.key.code == Keyboard::Right && snakeDirection != Left) {
+                        snakeDirection = Right;
+                    }
                 }
             }
-        }
 
-        //Move the snake
-        elapsedTime = clock.getElapsedTime();
-        if (elapsedTime.asSeconds() >= moveDelay) {
-            //Determine new head position based on direction
-            Segment newHead = snakeBody[0];
-            if (snakeDirection == Up) {
-                newHead.y -= 1;
-            } else if (snakeDirection == Down) {
-                newHead.y += 1;
-            } else if (snakeDirection == Left) {
-                newHead.x -= 1;
-            } else if (snakeDirection == Right) {
-                newHead.x += 1;
-            }
+            //Move the snake
+            elapsedTime = clock.getElapsedTime();
+            if (elapsedTime.asSeconds() >= moveDelay) {
+                //Determine new head position based on direction
+                Segment newHead = snakeBody[0];
+                if (snakeDirection == Up) {
+                    newHead.y -= 1;
+                } else if (snakeDirection == Down) {
+                    newHead.y += 1;
+                } else if (snakeDirection == Left) {
+                    newHead.x -= 1;
+                } else if (snakeDirection == Right) {
+                    newHead.x += 1;
+                }
 
-            //Check if the snake eats the fruit
-            if (newHead.x == fruitX && newHead.y == fruitY) {
-                ateFruit = true; //Snake will grow
-                placeFruit(fruitX, fruitY, snakeBody); //Place new fruit
-            }
+                //Check if the snake eats the fruit
+                if (newHead.x == fruitX && newHead.y == fruitY) {
+                    ateFruit = true; //Snake will grow
+                    placeFruit(fruitX, fruitY, snakeBody); //Place new fruit
+                    score++;
+                }
 
-            snakeBody.insert(snakeBody.begin(), newHead);
+                snakeBody.insert(snakeBody.begin(), newHead);
 
-            if (!ateFruit) {
-                snakeBody.pop_back(); //Remove the tail if no fruit eaten
-            } else {
-                ateFruit = false; //Reset after growing
-            }
+                if (!ateFruit) {
+                    snakeBody.pop_back(); //Remove the tail if no fruit eaten
+                } else {
+                    ateFruit = false; //Reset after growing
+                }
 
-            //Check if the snake collides with itself (game over)
-            for (size_t i = 1; i < snakeBody.size(); ++i) {  //Start at 1, since head is already checked
-                if (snakeBody[i].x == newHead.x && snakeBody[i].y == newHead.y) {
+                //Check if the snake collides with itself (game over)
+                for (size_t i = 1; i < snakeBody.size(); ++i) {  //Start at 1, since head is already checked
+                    if (snakeBody[i].x == newHead.x && snakeBody[i].y == newHead.y) {
+                        cout << "Game Over!" << endl;
+                        window.close();
+                    }
+                }
+
+                //Check if the snake hits the wall (game over)
+                if (newHead.x < 0 || newHead.x >= gridWidth || newHead.y < 0 || newHead.y >= gridHeight) {
                     cout << "Game Over!" << endl;
                     window.close();
                 }
+
+                //Reset clock after moving the snake
+                clock.restart();
             }
 
-            //Check if the snake hits the wall (game over)
-            if (newHead.x < 0 || newHead.x >= gridWidth || newHead.y < 0 || newHead.y >= gridHeight) {
-                cout << "Game Over!" << endl;
-                window.close();
-            }
+            //Clear window
+            window.clear();
 
-            //Reset clock after moving the snake
-            clock.restart();
-        }
-
-        //Clear window
-        window.clear();
-
-        //Draw the checkerboard pattern
-        for (int y = 0; y < gridHeight; ++y) {
-            for (int x = 0; x < gridWidth; ++x) {
-                RectangleShape tile(Vector2f(tileSize, tileSize));
-                //Alternate colors based on position
-                if ((x + y) % 2 == 0) {
-                    tile.setFillColor(Color(100, 200, 100));  //Light green
-                } else {
-                    tile.setFillColor(Color(50, 150, 50));  //Darker green
+            //Draw the checkerboard pattern
+            for (int y = 0; y < gridHeight; ++y) {
+                for (int x = 0; x < gridWidth; ++x) {
+                    RectangleShape tile(Vector2f(tileSize, tileSize));
+                    //Alternate colors based on position
+                    if ((x + y) % 2 == 0) {
+                        tile.setFillColor(Color(100, 200, 100));  //Light green
+                    } else {
+                        tile.setFillColor(Color(50, 150, 50));  //Darker green
+                    }
+                    tile.setPosition(x * tileSize, y * tileSize);
+                    window.draw(tile);
                 }
-                tile.setPosition(x * tileSize, y * tileSize);
-                window.draw(tile);
             }
+
+            
+            //Draw the snake
+            for (size_t i = 0; i < snakeBody.size(); ++i) {
+                RectangleShape snakeSegment(Vector2f(tileSize, tileSize));
+                if (i == 0) {
+                    snakeSegment.setFillColor(Color::White); //Make the head white
+                } else {
+                    snakeSegment.setFillColor(snakeColor); //Use chosen snake color for the rest of the body
+                }
+                snakeSegment.setPosition(snakeBody[i].x * tileSize, snakeBody[i].y * tileSize);
+                window.draw(snakeSegment);
+            }
+
+
+            //Draw the fruit
+            fruit.setPosition(fruitX * tileSize, fruitY * tileSize);
+            window.draw(fruit);
+
+            // Display current score and high score
+            Font font;
+            if (!font.loadFromFile("Roboto-Regular.ttf")) {
+                cout << "Error loading font!" << endl;
+                return -1;
+            }
+
+            // Positions and prints current score
+            Text scoreText("Score: " + to_string(score), font, 20);
+            scoreText.setFillColor(Color::White);
+            scoreText.setPosition(10, 10);
+            window.draw(scoreText);
+            
+            // Positions and prints high score
+            Text highScoreText("High Score: " + to_string(highScore), font, 20);
+            highScoreText.setFillColor(Color::White);
+            highScoreText.setPosition(10, 40);
+            window.draw(highScoreText);
+
+            window.display();
         }
 
+        if (score > highScore)
+        {
+            highScore = score;
+            saveHighScore(highScore); // Saves a new high score if player beats old one
+        }
         
-        //Draw the snake
-        for (size_t i = 0; i < snakeBody.size(); ++i) {
-            RectangleShape snakeSegment(Vector2f(tileSize, tileSize));
-            if (i == 0) {
-                snakeSegment.setFillColor(Color::White); //Make the head white
-            } else {
-                snakeSegment.setFillColor(snakeColor); //Use chosen snake color for the rest of the body
-            }
-            snakeSegment.setPosition(snakeBody[i].x * tileSize, snakeBody[i].y * tileSize);
-            window.draw(snakeSegment);
-        }
-
-
-        //Draw the fruit
-        fruit.setPosition(fruitX * tileSize, fruitY * tileSize);
-        window.draw(fruit);
-
-        //Display the window
-        window.display();
+        playAgain = playAgainPrompt();
     }
 
+    cout << "Thanks for playing! Final High Score: " << highScore << endl;
     return 0;
 }
