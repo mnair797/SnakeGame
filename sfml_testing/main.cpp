@@ -32,11 +32,11 @@ struct Segment {
  */
 void placeFruit(int &fruitX, int &fruitY, const vector<Segment> &snakeBody, Sprite &fruitSprite) {
     //Randomly pick a spot on the board
-    fruitX = rand() % gridWidth;
-    fruitY = rand() % gridHeight;
+    fruitX = rand()%gridWidth;
+    fruitY = rand()%gridHeight;
 
     //Ensure the fruit doesn't land on the snake
-    for (const Segment &segment : snakeBody) {
+    for (const Segment &segment:snakeBody) {
         if (segment.x == fruitX && segment.y == fruitY) {
             placeFruit(fruitX, fruitY, snakeBody, fruitSprite);  //Recurse if the fruit is on the snake
             return;
@@ -53,11 +53,10 @@ void placeFruit(int &fruitX, int &fruitY, const vector<Segment> &snakeBody, Spri
  * @param specialFruitY The y-coordinate of the special fruit.
  * @param snakeBody A vector of structures indicating the coordinates
  * @param specialFruitSprite The sprite object representing the special fruit
- * @param specialFruitOnScreen Indicates whether the special fruit is currently visible on the screen.
+ * @param specialFruitOnScreen Whether the special fruit is currently visible on the screen.
  */
 void placeSpecialFruit(int &specialFruitX, int &specialFruitY, const vector<Segment> &snakeBody, Sprite &specialFruitSprite, bool ateSpecialFruit) {
-    if (ateSpecialFruit) {
-        // If eaten, special fruit is moved off screen
+    if (ateSpecialFruit == true) { //If eaten, special fruit is moved off screen
         specialFruitX = -1;
         specialFruitY = -1;
     }
@@ -67,14 +66,14 @@ void placeSpecialFruit(int &specialFruitX, int &specialFruitY, const vector<Segm
     }
 
     //Ensure the fruit doesn't land on the snake
-    for (const Segment &segment : snakeBody) {
+    for (const Segment &segment: snakeBody) {
         if (segment.x == specialFruitX && segment.y == specialFruitY) {
             placeFruit(specialFruitX, specialFruitY, snakeBody, specialFruitSprite);  //Recurse if the fruit is on the snake
             return;
         }
     }
     
-    specialFruitSprite.setPosition(specialFruitX * tileSize, specialFruitY * tileSize);
+    specialFruitSprite.setPosition(specialFruitX * tileSize , specialFruitY * tileSize);
 }
 
 /**
@@ -105,7 +104,7 @@ void displayStartScreen(RenderWindow &window, Color &snakeColor, int &speedLevel
     vector<string> colorNames = {"Black", "Blue", "Magenta", "Yellow"};
     int selectedColor = 0;
 
-    speedLevel = 5; //Default speed level (medium)
+    speedLevel = 5; //Default speed level
 
     while (window.isOpen()) {
         Event event;
@@ -174,11 +173,11 @@ bool playAgainPrompt() {
     char choice;
     cout << "Game Over! Play Again? (Y/N): ";
     cin >> choice;
-    return (choice == 'Y' || choice == 'y');
+    return (choice == 'Y');
 }
 
 /**
- Saves the high score to a file to persist between game sessions
+ Saves the high score to a file so it stays between game sessions
  @param highScore The highest score achieved during the session
 */
 void saveHighScore(int highScore) {
@@ -212,7 +211,7 @@ int main() {
     {
         int score = 0;
         int fruit_counter = 0;
-        int numForSpecialFruit = 10; // Eat 10 regular fruits for a special fruit to display
+        int numForSpecialFruit = 10; //Eat 10 regular fruits for a special fruit to display
 
         //Create a window
         RenderWindow window(VideoMode(gridWidth * tileSize, gridHeight * tileSize), "Snake Game");
@@ -241,25 +240,29 @@ int main() {
         fruitSprite.setPosition(fruitX * tileSize, fruitY * tileSize);
         fruitSprite.setScale(float(tileSize) / fruitSprite.getLocalBounds().width, float(tileSize) / fruitSprite.getLocalBounds().height); //Scales image down
 
-        // Create special fruit
+        //Create special fruit
         Texture specialFruitTexture;
         specialFruitTexture.loadFromFile("special_fruit.png");
         Sprite specialFruitSprite;
         specialFruitSprite.setTexture(specialFruitTexture);
-        int special_fruit_x = -1, special_fruit_y = -1;  // Initially no special fruit
+        int special_fruit_x = -1;  //Initially no special fruit
+        int special_fruit_y = -1;  //Initially no special fruit
         specialFruitSprite.setPosition(special_fruit_x * tileSize, special_fruit_y * tileSize);
-        specialFruitSprite.setScale(float(tileSize) / specialFruitSprite.getLocalBounds().width, float(tileSize) / specialFruitSprite.getLocalBounds().height); // Scale image down
+        specialFruitSprite.setScale(float(tileSize) / specialFruitSprite.getLocalBounds().width, float(tileSize) / specialFruitSprite.getLocalBounds().height); //Scale image down
         
 
         //Direction variable
         int snakeDirection = Right; //Snake starts moving to the right initially
         bool ateFruit = false; //If snake ate the fruit
-        bool ateSpecialFruit = false; // If snake ate the special fruit
+        bool ateSpecialFruit = false; //If snake ate the special fruit
 
         //SFML clock to calculate time for automatic movement
         Clock clock;
         Time elapsedTime;
         
+        Clock specialFruitClock;
+        Time specialFruitTime;
+
         float moveDelay = 0.46f - ((speedLevel - 1) * 0.04f); //Maps speed level 1-10 to delay
 
         //Game loop
@@ -301,8 +304,12 @@ int main() {
                     newHead.x += 1;
                 }
 
-                if (fruit_counter == numForSpecialFruit && special_fruit_x == -1) {
-                    placeSpecialFruit(special_fruit_x, special_fruit_y, snakeBody, specialFruitSprite, ateSpecialFruit); // Place special fruit
+                if (fruit_counter >= numForSpecialFruit && special_fruit_x == -1 && special_fruit_y == -1) {
+                    placeSpecialFruit(special_fruit_x, special_fruit_y, snakeBody, specialFruitSprite, ateSpecialFruit); //Place special fruit
+                }
+                if (fruit_counter >= numForSpecialFruit && specialFruitClock.getElapsedTime().asSeconds() >= 3.f) { //Moves the special fruit around every 3 seconds
+                    placeSpecialFruit(special_fruit_x, special_fruit_y, snakeBody, specialFruitSprite, ateSpecialFruit);
+                    specialFruitClock.restart(); //Restart clock
                 }
                 
                 //Check if the snake eats the fruit
@@ -315,24 +322,23 @@ int main() {
                 
                 //Check if the snake eats the special fruit
                 if (newHead.x == special_fruit_x && newHead.y == special_fruit_y) {
-                    ateSpecialFruit = true; // Snake will grow
-                    score+=5; // Give extra points
+                    ateSpecialFruit = true; //Snake will grow
+                    score+=5; //Give extra points
                     fruit_counter=0;
                     placeSpecialFruit(special_fruit_x, special_fruit_y, snakeBody, specialFruitSprite, ateSpecialFruit);
                 }
 
                 snakeBody.insert(snakeBody.begin(), newHead);
 
-                if (!ateFruit && !ateSpecialFruit) {
+                if (ateFruit == false && ateSpecialFruit == false) {
                     snakeBody.pop_back(); //Remove the tail if no fruit eaten
                 } else {
-                    ateFruit = false; //Reset after growing
+                    ateFruit = false;
                     ateSpecialFruit = false;
                 }
-                
 
                 //Check if the snake collides with itself (game over)
-                for (size_t i = 1; i < snakeBody.size(); ++i) {  //Start at 1, since head is already checked
+                for (size_t i = 1; i < snakeBody.size(); ++i) {
                     if (snakeBody[i].x == newHead.x && snakeBody[i].y == newHead.y) {
                         cout << "Game Over!" << endl;
                         window.close();
@@ -386,20 +392,20 @@ int main() {
             window.draw(fruitSprite);
             window.draw(specialFruitSprite);
 
-            // Display current score and high score
+            //Display current score and high score
             Font font;
             if (!font.loadFromFile("Roboto-Regular.ttf")) {
                 cout << "Error loading font!" << endl;
                 return -1;
             }
 
-            // Positions and prints current score
+            //Positions and prints current score
             Text scoreText("Score: " + to_string(score), font, 20);
             scoreText.setFillColor(Color::White);
             scoreText.setPosition(10, 10);
             window.draw(scoreText);
             
-            // Positions and prints high score
+            //Positions and prints high score
             Text highScoreText("High Score: " + to_string(highScore), font, 20);
             highScoreText.setFillColor(Color::White);
             highScoreText.setPosition(10, 40);
@@ -411,13 +417,13 @@ int main() {
         if (score > highScore)
         {
             highScore = score;
-            saveHighScore(highScore); // Saves a new high score if player beats old one
+            saveHighScore(highScore); //Saves a new high score if player beats old one
         }
         
         playAgain = playAgainPrompt();
     }
 
     cout << "Thanks for playing! Final High Score: " << highScore << endl;
-    saveHighScore(0); // Resets high score for next game
+    saveHighScore(0); //Resets high score for next game
     return 0;
 }
