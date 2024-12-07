@@ -28,6 +28,7 @@ struct Segment {
  @param fruitX The x-coordinate of the fruit.
  @param fruitY The y-coordinate of the fruit.
  @param snakeBody A vector of structures indicating the coordinates.
+ @param fruitSprite The sprite object representing the fruit
  */
 void placeFruit(int &fruitX, int &fruitY, const vector<Segment> &snakeBody, Sprite &fruitSprite) {
     //Randomly pick a spot on the board
@@ -43,7 +44,39 @@ void placeFruit(int &fruitX, int &fruitY, const vector<Segment> &snakeBody, Spri
     }
     
     fruitSprite.setPosition(fruitX * tileSize, fruitY * tileSize);
+
 }
+
+/**
+ * This function places a special fruit randomly on the screen passed through reference, and ensures it is not on the snake.
+ * @param specialFruitX The x-coordinate of the special fruit.
+ * @param specialFruitY The y-coordinate of the special fruit.
+ * @param snakeBody A vector of structures indicating the coordinates
+ * @param specialFruitSprite The sprite object representing the special fruit
+ * @param specialFruitOnScreen Indicates whether the special fruit is currently visible on the screen.
+ */
+void placeSpecialFruit(int &specialFruitX, int &specialFruitY, const vector<Segment> &snakeBody, Sprite &specialFruitSprite, bool ateSpecialFruit) {
+    if (ateSpecialFruit) {
+        // If eaten, special fruit is moved off screen
+        specialFruitX = -1;
+        specialFruitY = -1;
+    }
+    else {
+        specialFruitX = rand() % gridWidth;
+        specialFruitY = rand() % gridHeight;
+    }
+
+    //Ensure the fruit doesn't land on the snake
+    for (const Segment &segment : snakeBody) {
+        if (segment.x == specialFruitX && segment.y == specialFruitY) {
+            placeFruit(specialFruitX, specialFruitY, snakeBody, specialFruitSprite);  //Recurse if the fruit is on the snake
+            return;
+        }
+    }
+    
+    specialFruitSprite.setPosition(specialFruitX * tileSize, specialFruitY * tileSize);
+}
+
 /**
  Displays the start screen, allowing players to choose the snake's color and speed, and start the game
  @param window The SFML RenderWindow for the game
@@ -178,6 +211,8 @@ int main() {
     while (playAgain)
     {
         int score = 0;
+        int fruit_counter = 0;
+        int numForSpecialFruit = 10; // Eat 10 regular fruits for a special fruit to display
 
         //Create a window
         RenderWindow window(VideoMode(gridWidth * tileSize, gridHeight * tileSize), "Snake Game");
@@ -206,9 +241,20 @@ int main() {
         fruitSprite.setPosition(fruitX * tileSize, fruitY * tileSize);
         fruitSprite.setScale(float(tileSize) / fruitSprite.getLocalBounds().width, float(tileSize) / fruitSprite.getLocalBounds().height); //Scales image down
 
+        // Create special fruit
+        Texture specialFruitTexture;
+        specialFruitTexture.loadFromFile("special_fruit.png");
+        Sprite specialFruitSprite;
+        specialFruitSprite.setTexture(specialFruitTexture);
+        int special_fruit_x = -1, special_fruit_y = -1;  // Initially no special fruit
+        specialFruitSprite.setPosition(special_fruit_x * tileSize, special_fruit_y * tileSize);
+        specialFruitSprite.setScale(float(tileSize) / specialFruitSprite.getLocalBounds().width, float(tileSize) / specialFruitSprite.getLocalBounds().height); // Scale image down
+        
+
         //Direction variable
         int snakeDirection = Right; //Snake starts moving to the right initially
         bool ateFruit = false; //If snake ate the fruit
+        bool ateSpecialFruit = false; // If snake ate the special fruit
 
         //SFML clock to calculate time for automatic movement
         Clock clock;
@@ -255,20 +301,35 @@ int main() {
                     newHead.x += 1;
                 }
 
+                if (fruit_counter == numForSpecialFruit && special_fruit_x == -1) {
+                    placeSpecialFruit(special_fruit_x, special_fruit_y, snakeBody, specialFruitSprite, ateSpecialFruit); // Place special fruit
+                }
+                
                 //Check if the snake eats the fruit
                 if (newHead.x == fruitX && newHead.y == fruitY) {
                     ateFruit = true; //Snake will grow
                     placeFruit(fruitX, fruitY, snakeBody, fruitSprite); //Place new fruit
                     score++;
+                    fruit_counter++;
+                }
+                
+                //Check if the snake eats the special fruit
+                if (newHead.x == special_fruit_x && newHead.y == special_fruit_y) {
+                    ateSpecialFruit = true; // Snake will grow
+                    score+=5; // Give extra points
+                    fruit_counter=0;
+                    placeSpecialFruit(special_fruit_x, special_fruit_y, snakeBody, specialFruitSprite, ateSpecialFruit);
                 }
 
                 snakeBody.insert(snakeBody.begin(), newHead);
 
-                if (!ateFruit) {
+                if (!ateFruit && !ateSpecialFruit) {
                     snakeBody.pop_back(); //Remove the tail if no fruit eaten
                 } else {
                     ateFruit = false; //Reset after growing
+                    ateSpecialFruit = false;
                 }
+                
 
                 //Check if the snake collides with itself (game over)
                 for (size_t i = 1; i < snakeBody.size(); ++i) {  //Start at 1, since head is already checked
@@ -287,7 +348,8 @@ int main() {
                 //Reset clock after moving the snake
                 clock.restart();
             }
-
+            
+            
             //Clear window
             window.clear();
 
@@ -320,8 +382,9 @@ int main() {
             }
 
 
-            //Draw the fruit
+            //Draw the fruits
             window.draw(fruitSprite);
+            window.draw(specialFruitSprite);
 
             // Display current score and high score
             Font font;
