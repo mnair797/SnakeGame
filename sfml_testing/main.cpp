@@ -1,4 +1,6 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -105,8 +107,9 @@ void displayStartScreen(RenderWindow &window, Color &snakeColor, int &speedLevel
     int selectedColor = 0;
 
     speedLevel = 5; //Default speed level
-
+    
     while (window.isOpen()) {
+        
         Event event;
         while (window.pollEvent(event)) {
             if (event.type == Event::Closed)
@@ -141,7 +144,7 @@ void displayStartScreen(RenderWindow &window, Color &snakeColor, int &speedLevel
         //Draw the instructions
         window.draw(instructions);
 
-        //Display color options
+        //Show color options
         for (size_t i = 0; i < colors.size(); ++i) {
             Text colorOption(colorNames[i], font, 25);
             if (i == selectedColor) {
@@ -154,13 +157,13 @@ void displayStartScreen(RenderWindow &window, Color &snakeColor, int &speedLevel
             window.draw(colorOption);
         }
 
-        //Display speed level
+        //Show speed level
         Text speedText("Speed Level: " + to_string(speedLevel), font, 25);
         speedText.setFillColor(Color::White);
         speedText.setPosition(gridWidth * tileSize / 2 - speedText.getGlobalBounds().width / 2, 500);
         window.draw(speedText);
 
-        //Display everything
+        //Show everything
         window.display();
     }
 }
@@ -173,7 +176,11 @@ bool playAgainPrompt() {
     char choice;
     cout << "Game Over! Play Again? (Y/N): ";
     cin >> choice;
-    return (choice == 'Y');
+    if (choice == 'Y')
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -211,7 +218,7 @@ int main() {
     {
         int score = 0;
         int fruit_counter = 0;
-        int numForSpecialFruit = 10; //Eat 10 regular fruits for a special fruit to display
+        int numForSpecialFruit = 10; //Eat 10 regular fruits for a special fruit to show up
 
         //Create a window
         RenderWindow window(VideoMode(gridWidth * tileSize, gridHeight * tileSize), "Snake Game");
@@ -223,7 +230,7 @@ int main() {
         Color snakeColor = Color::Black; //Default to black body color
         int speedLevel = 5; //Default to medium speed
 
-        //Display start screen
+        //Show start screen
         displayStartScreen(window, snakeColor, speedLevel);
 
         //Create snake (using a vector for the snake body)
@@ -264,7 +271,25 @@ int main() {
         Time specialFruitTime;
 
         float moveDelay = 0.46f - ((speedLevel - 1) * 0.04f); //Maps speed level 1-10 to delay
+        
+        //Load the munching sound of the apple
+        SoundBuffer startSoundBufferFruitMunch;
+        if (!startSoundBufferFruitMunch.loadFromFile("fruitmunch.wav")) {
+            cout << "Error loading sound\n";
+        }
+        Sound startFruitMunch;
+        startFruitMunch.setBuffer(startSoundBufferFruitMunch);
 
+        //Load the munching sound of the special fruit
+        SoundBuffer startSoundBufferSpecialFruitMunch;
+        if (!startSoundBufferSpecialFruitMunch.loadFromFile("specialmunch.wav")) {
+            cout << "Error loading sound\n";
+        }
+        Sound startSpecialFruitMunch;
+        startSpecialFruitMunch.setBuffer(startSoundBufferSpecialFruitMunch);
+        startSpecialFruitMunch.setVolume(50); //Set volume to 50%
+        
+        
         //Game loop
         while (window.isOpen()) {
             Event event;
@@ -312,20 +337,25 @@ int main() {
                     specialFruitClock.restart(); //Restart clock
                 }
                 
+                
                 //Check if the snake eats the fruit
                 if (newHead.x == fruitX && newHead.y == fruitY) {
                     ateFruit = true; //Snake will grow
                     placeFruit(fruitX, fruitY, snakeBody, fruitSprite); //Place new fruit
                     score++;
                     fruit_counter++;
+                    startFruitMunch.stop();
+                    startFruitMunch.play();
                 }
                 
                 //Check if the snake eats the special fruit
                 if (newHead.x == special_fruit_x && newHead.y == special_fruit_y) {
-                    ateSpecialFruit = true; //Snake will grow
+                    ateSpecialFruit = true; //Special fruit will disappear
                     score+=5; //Give extra points
                     fruit_counter=0;
                     placeSpecialFruit(special_fruit_x, special_fruit_y, snakeBody, specialFruitSprite, ateSpecialFruit);
+                    startSpecialFruitMunch.stop();
+                    startSpecialFruitMunch.play();
                 }
 
                 snakeBody.insert(snakeBody.begin(), newHead);
@@ -392,7 +422,7 @@ int main() {
             window.draw(fruitSprite);
             window.draw(specialFruitSprite);
 
-            //Display current score and high score
+            //Show current score and high score
             Font font;
             if (!font.loadFromFile("Roboto-Regular.ttf")) {
                 cout << "Error loading font!" << endl;
