@@ -1,3 +1,14 @@
+//Meenakshi Nair, Ishani Roy, Michelle Jayaraj
+//Intro to C++, Period 1
+//December 9th, 2024
+//Our project is a snake game, modeled after the Google snake game. In this game,
+//the snake (with a color selected by the user) moves around (at a speed selected by the user)
+//and is controlled by the arrow keys. The snake's objective is to eat the fruits. Every time a fruit
+//is eaten, the sanke will grow in size. There is a special fruit, an orange, after the snake eats
+//ten apples. This special fruit is worth more points, but moves around every three seconds. The game ends
+//when the snake's head hits the boundaries or itself. The player can play again multiple times, and the
+//game will keep track of the user's highest score. 
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
@@ -279,6 +290,7 @@ int main() {
         }
         Sound startFruitMunch;
         startFruitMunch.setBuffer(startSoundBufferFruitMunch);
+        startFruitMunch.setVolume(50); //Set volume to 50%
 
         //Load the munching sound of the special fruit
         SoundBuffer startSoundBufferSpecialFruitMunch;
